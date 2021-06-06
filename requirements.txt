@@ -1,0 +1,7 @@
+python-frontmatter
+sqlalchemy
+# pymysql
+mysqlclient
+sqlsoup
+six
+pygments
