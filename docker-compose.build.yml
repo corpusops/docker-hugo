@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  hugo:
+    build:
+      context: "."
+      args:
+        HUGO_BASE_IMAGE: "${HUGO_BASE_IMAGE:-corpusops/ubuntu:20.04}"
+        HUGO_RELEASE: "${HUGO_RELEASE:-latest}"
+        NVM_RELEASE: "${NVM_RELEASE:-latest}"

@@ -12,9 +12,6 @@ RUN set -e \
   | grep browser_download_url | cut -d '"' -f 4 \
   | egrep -i "($(uname -s)-64.*gz|checksum)">hugo_data \
   && cat hugo_data|while read f;do wget -c $f;done \
-  && rm -rfv *
-RUN set -e \
-  && cd /tmp \
   && egrep -i "($(uname -s)-64.*gz)" *checksum* | while read f;do \
     printf "$f\n" | sha256sum -c; \
     tar xzvf $(echo $f|awk '{print $2}');\

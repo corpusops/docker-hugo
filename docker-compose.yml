@@ -1,18 +1,12 @@
 version: "3.8"
 services:
   hugo:
-    build:
-      context: "."
-      args:
-        HUGO_BASE_IMAGE: "${HUGO_BASE_IMAGE:-corpusops/hugo:latest}"
-        HUGO_RELEASE: "${HUGO_RELEASE:-latest}"
-        NVM_RELEASE: "${NVM_RELEASE:-latest}"
     image: "${HUGO_TAG-corpusops/hugo}"
     volumes:
     - "./:/home/hugo/hugo"
-    - "./bin/docker-entrypoint.sh:/docker-entrypoint.sh"
+    - "./local/docker-hugo/bin/docker-entrypoint.sh:/docker-entrypoint.sh"
     environment:
-      COMPOSE_UID: "${COMPOSE_UID-}"
-      COMPOSE_GID: "${COMPOSE_GID-}"
+      HUGO_UID: "${HUGO_UID-}"
+      HUGO_GID: "${HUGO_GID-}"
     network_mode: host
     env_file: [.env]
