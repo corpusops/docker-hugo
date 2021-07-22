@@ -8,7 +8,7 @@ if [[ -z $HUGO_UID ]] || [[ -z $HUGO_GID ]];then
 fi
 usermod -o -g $HUGO_GID -u $HUGO_UID hugo
 while read f;do chown -Rfv $HUGO_UID:$HUGO_GID "$f";done < \
-    <( find ~hugo -not -uid $HUGO_GID )
+    <( find ~hugo -not -uid $HUGO_UID )
 if [[ -z $@ ]];then
     exec gosu hugo bash -lic "nvm use;hugo_extended server --disableFastRender"
 elif [[ "$@" == "shell" ]];then
