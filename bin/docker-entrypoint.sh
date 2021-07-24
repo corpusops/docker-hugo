@@ -12,7 +12,8 @@ export NO_FIXPERMS=${NO_FIXPERMS-}
 SHELL_USER=${SHELL_USER:-$HUGO_USER}
 FILES_DIRS="${FILES_DIRS:-"$HUGO_HOME"}"
 HUGO_DIRS="${HUGO_DIRS:-"/home"}"
-if [[ -n $SDEBUG ]];then set -x;fi
+VERBOSE=""
+if [[ -n $SDEBUG ]];then set -x;VERBOSE="v";fi
 if [[ -z $HUGO_UID ]] || [[ -z $HUGO_GID ]];then
     die 'set $HUGO_UID / $HUGO_GID'
 fi
@@ -24,11 +25,12 @@ else
 fi
 if [[ -z ${NO_ALL_FIXPERMS} ]];then
     if [[ -z "$NO_TRANSFER" ]];then
-        while read f;do chown -fv $HUGO_UID:$HUGO_GID "$f";ls -dl $f;exit 1;done < \
-            <( find $HUGO_DIRS -uid $HUGO_OLD_UID -or -gid $HUGO_OLD_GID )
+        while read f;do chown -f${VERBOSE} $HUGO_UID:$HUGO_GID "$f";ls -dl $f;exit 1;done < \
+            <( find $HUGO_DIRS \( -uid $HUGO_OLD_UID -or -gid $HUGO_OLD_GID \) \
+                -and -not -uid $HUGO_UID )
     fi
     if [[ -z ${NO_FIXPERMS} ]];then
-        while read f;do chown -fv $HUGO_UID:$HUGO_GID "$f";done < \
+        while read f;do chown -f${VERBOSE} $HUGO_UID:$HUGO_GID "$f";done < \
             <( find $FILES_DIRS -not -uid $HUGO_UID )
     fi
 fi
