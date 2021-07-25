@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 HUGO_USER=${HUGO_USER:-hugo}
+HUGO_GROUP=${HUGO_USER:-${HUGO_USER}-group}
 cd ${WORKDIR-/home/$HUGO_USER/hugo}
 log() { echo "$@" >&2; }
 die() { log "$@";exit 1; }
@@ -18,6 +19,7 @@ if [[ -z $HUGO_UID ]] || [[ -z $HUGO_GID ]];then
     die 'set $HUGO_UID / $HUGO_GID'
 fi
 if [[ "${HUGO_OLD_UID}${HUGO_OLD_GID}" != "${HUGO_UID}${HUGO_GID}" ]];then
+    if !(getent group $HUGO_GID);then groupadd -g $HUGO_GID $HUGO_GROUP;fi
     usermod -o -g $HUGO_GID -u $HUGO_UID $HUGO_USER
     NO_TRANSFER=
 else
