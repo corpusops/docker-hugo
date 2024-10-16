@@ -2,7 +2,7 @@
 set -e
 HUGO_USER=${HUGO_USER:-hugo}
 HUGO_GROUP=${HUGO_USER:-${HUGO_USER}-group}
-cd ${WORKDIR-/home/$HUGO_USER/hugo}
+cd ${WORKDIR-/home/$HUGO_USER/hugo} || ( echo "no hugo/ folder" && exit 1: )
 log() { echo "$@" >&2; }
 die() { log "$@";exit 1; }
 HUGO_HOME="$(getent passwd $HUGO_USER| cut -d: -f6)"

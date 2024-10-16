@@ -3,17 +3,17 @@ openssh-client
 rsync
 # runtime dependencies
 python3
-python3.8
-python3.8-distutils
-python3.8-lib2to3
-libpython3.8
+python3.10
+python3.10-distutils
+python3.10-lib2to3
+libpython3.10
 binutils
 ca-certificates
 curl
 gettext
 git
 less
-libllvm10
+libllvm14
 lsb-release
 postgresql-client
 mysql-client
@@ -35,7 +35,7 @@ libproj-dev
 libstdc++-9-dev
 postgresql-client
 postgresql-server-dev-all
-python3.8-dev
+python3.10-dev
 python3-dev
 software-properties-common
 libffi-dev
