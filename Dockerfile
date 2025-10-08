@@ -1,5 +1,8 @@
-ARG HUGO_BASE_IMAGE="corpusops/ubuntu:20.04"
-FROM $HUGO_BASE_IMAGE as runner
+ARG RSYNC=corpusops/rsync
+ARG HUGO_BASE_IMAGE="corpusops/ubuntu:22.04-2.17"
+FROM $HUGO_BASE_IMAGE AS base
+ENV PATH=/w/node_modules/.bin:$COPS_ROOT/bin:$PATH
+FROM base AS final
 ARG GITHUB_PAT="NTA2N2MxYTQzNDgzOGRkYzZkZTczZTZlNjljZTFkNGEzNWZjMWMxOAo="
 ARG HUGO_RELEASE="latest"
 ARG PKG="gohugoio/hugo"
@@ -41,17 +44,30 @@ ARG NVMURI="https://api.github.com/repos/nvm-sh/nvm/releases"
 RUN set -e \
   && if !( echo $NVM_RELEASE|grep -E -q ^latest$ );then NVMURI="$NVMURI/tags";fi  \
   && curl -sH "Authorization: token $(echo $GITHUB_PAT|base64 -d)" "$NVMURI/$NVM_RELEASE"|grep tag_name|cut -d '"' -f 4 > t \
-  && curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/$(cat t)/install.sh -o /bin/install_nvm.sh \
+  && curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/$(cat t)/install.sh -o /bin/install_nvm.sh
+RUN set -e \
   && if !( getent group hugo  2>/dev/null);then groupadd -g 1000 hugo;fi \
   && if !( getent passwd hugo 2>/dev/null);then useradd -m -u 1000 -g 1000 hugo;fi
-ENV PATH=/w/node_modules/.bin:$COPS_ROOT/bin:$PATH
 USER hugo
 WORKDIR /home/hugo
-RUN bash -lc "bash /bin/install_nvm.sh"
+RUN bash -lc "bash /bin/install_nvm.sh\
+    && if ( grep -q nvm .bash_profile ) && ! ( grep -q nvm .profile );then \
+        grep -p nvm .profile >> .bash_profile;\
+    fi"
+RUN bash -ilc ": verify nvm is loaded && nvm --version"
 ADD --chown=hugo:hugo .nvmrc ./
-RUN bash -ic 'nvm install $(cat .nvmrc)'
+RUN bash -ilc 'nvm install $(cat .nvmrc)'
 ADD --chown=hugo:hugo package.json package*json ./
 RUN bash -elic 'nvm use && npm ci'
 ADD /bin/docker-entrypoint.sh /
+
+# SQUASH Stage
+FROM $RSYNC AS squashed-rsync
+FROM base AS squashed-ancestor
+WORKDIR /home/hugo
+ARG ROOTFS="/BASE_ROOTFS_TO_COPY_THAT_WONT_COLLIDE_1234567890"
+ARG PATH="${ROOTFS}_rsync/bin:$PATH"
+RUN --mount=type=bind,from=final,target=$ROOTFS --mount=type=bind,from=squashed-rsync,target=${ROOTFS}_rsync \
+rsync -Aaz --delete ${ROOTFS}/ / --exclude=/proc --exclude=/sys --exclude=/etc/resolv.conf --exclude=/etc/hosts --exclude=$ROOTFS* --exclude=dev/shm --exclude=dev/pts --exclude=dev/mqueue
 USER root
 ENTRYPOINT ["/docker-entrypoint.sh"]
